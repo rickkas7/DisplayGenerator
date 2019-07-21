@@ -73,18 +73,19 @@ There are two main parts:
 - The user interface part is a Vue.js application.
 - The Adafruit GFX code runs using Enscripten.
 
-Enscripten takes C++ code and compiles it to WebASM. I have the Adafruit GFX library and some necessary utilities (like String) as the C++ source in the src directory. 
+[Emscripten](https://emscripten.org) takes C++ code and compiles it to WebASM. I have the Adafruit GFX library and some necessary utilities (like String) as the C++ source in the src directory. 
 
-Enscripten itself contains the necessary bindings so I can call C++ code from Javascript. I added wrappers for all of the GFX calls. I also added a call to read the bitmap data out as an array of bytes.
-
+Emscripten generates the necessary bindings so I can call C++ code from Javascript. I added wrappers for all of the GFX calls and a call to read the bitmap data out as an array of bytes.
 
 The "program" is just a JSON array with an object for each command like writePixel, drawLine, drawRect, etc.. It's an array so you might have multiple setCursor and drawText commands, for example, in it.
 
+The save and load options read and write this JSON object.
+
 The display generator iterates this array and calls the GFX code with the appropriate parameters to render the display.
 
-It also generates the C++ display code, which is mostly just building an output string from the parameters.
+It also generates the C++ display code, including the GFX calls, any additional includes, and any bitmap data.
 
-The Javascript code takes the display bitmap and renders it on a HTML5 canvas.
+The Javascript code takes the display bitmap and renders it on a HTML5 canvas in normal and zoomed size.
 
 
  
