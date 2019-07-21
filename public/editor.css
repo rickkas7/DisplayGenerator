@@ -1,0 +1,22 @@
+body
+{
+background-color:#ffffff;
+max-width:800;
+}
+
+p,h1,h2,h3,li,td,div
+{ 
+font-family: helvetica, sans-serif;
+color:#000000;
+font-size: medium; 
+}
+
+div.selectedCommand
+{
+background-color:#ffee67;
+}
+
+textarea.code
+{
+font-family: monospace;
+}

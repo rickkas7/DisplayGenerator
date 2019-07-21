@@ -1,0 +1,131 @@
+<html>
+<head>
+<title>Display Generator</title>
+<script type="text/javascript" src="editor.js"></script>
+<link rel="stylesheet" href="editor.css">
+</head>
+<body>
+
+
+<div id="mainApp">
+
+<p>This is an experimental project to make it easier to generate the code for SSD1306 OLED monochrome
+displays (128x64 or 128x32) on Particle devices. You can find out more about this project in its
+<a href="https://github.com/rickkas7/DisplayGenerator">open source repository</a>.</p>
+
+<form v-on:submit.prevent>
+  <canvas id="mainCanvas" width="640" height="200" v-on:click="canvasClick"></canvas>
+
+  <p>
+  	Display Type: <select v-model="displayType">
+  		<option value="normal">128 x 64 (normal)</option>
+  		<option value="short">128 x 32 (short)</option>
+  		<option value="yellow">128 x 64 (yellow and blue)</option>
+  	</select> 
+  	
+  	&nbsp;&nbsp;&nbsp; 
+  	
+  	{{coordinates}}
+  </p>
+
+  <cmd-list
+      v-for="command in commands"
+      v-bind:key="command.id"
+      v-bind:command="command"
+      v-bind:fonts="fonts"
+      v-bind:selected-command-id="selectedCommandId"
+    ></cmd-list>
+    
+    
+    <div>
+		<p>
+			<button v-on:click="moveUpCommand" :disabled="selectedCommandId < 0">Move Up</button>
+			<button v-on:click="moveDownCommand" :disabled="selectedCommandId < 0">Move Down</button>
+			&nbsp;	
+			<button v-on:click="copyCommand" :disabled="selectedCommandId < 0">Duplicate</button>
+			<button v-on:click="deleteCommand" :disabled="selectedCommandId < 0">Delete</button>
+			&nbsp;	
+			&nbsp;	
+			<button v-on:click="deleteAllCommand" :disabled="commands.length == 0">Delete All</button>						
+		</p>
+   		<p>Add a command: 
+   			<select v-model="commandToAdd">
+			<option v-for="name in commandNames" v-bind:value="name">
+			    {{ name }}
+  			</option>
+			</select>
+			<button v-on:click="addCommand">Add</button>
+		</p>
+		<p>
+			<button v-on:click="downloadCommand">Save Layout</button>
+			&nbsp;
+			Load Layout: <input type="file" id="files" name="files" accept="text/*, application/json, *.json" v-on:change="uploadCommand"/>
+			&nbsp;
+			<input type="checkbox" v-model="downloadAppend" id="downloadAppend"/><label for="downloadAppend">Append</label>	
+		</p>
+    </div>
+</form>
+  
+<div id="codeOutput">
+<p>Code:</p>
+<textArea rows="10" cols="100" v-model="codeText" id="codeTextArea" class="code" spellcheck="false">
+</textArea>
+
+<p>
+	<button v-on:click="copyCodeCommand">Copy Code</button>
+	<button v-on:click="saveCodeCommand">Save Code</button>
+</p>
+
+
+</div> <!-- codeOutput -->
+  
+</div> <!-- mainApp -->
+
+
+
+<div id="iconApp" style="display:none">
+
+<form v-on:submit.prevent>
+	<div>
+		<p>
+		<input type="checkbox" v-model="square" id="squareCheckbox"/><label for="squareCheckbox">Square</label>	
+		
+		<span v-if="square">Size = <input v-model="size" size="4"></span>
+		<span v-else>Width = <input v-model="width" size="4"> Height = <input v-model="height" size="4"></span>
+		  
+		&nbsp;Weight = <input v-model="weight" size="4">
+		<input type="checkbox" v-model="showCode" id="showCodeCheckbox" /><label for="showCodeCheckbpx">Show code</label></p>
+	</div>
+	<div>
+		<p>Icon Preview: {{selectedIconName}}</p>
+		<canvas id="iconCanvas" width="64" height="64"></canvas>
+		<p><img id="iconImg" style="display:none" /></p>
+	</div>
+	<div>
+		<p>Upload and convert image file: 
+		<input type="file" id="files" name="files" accept="image/*, *.gif, *.jpg, *.jpeg, *.png, *.svg" v-on:change="uploadIconCommand"/></p>
+	</div>
+	<div>
+		<p>Or select a stock icon from the open source <a href="https://feathericons.com/">Feather Icons</a> collection:</p>
+		<p>Search: <input v-model="search" size="10"> <button v-on:click="searchAll">Show All</button></p>
+	</div>
+</form>
+
+<table>
+  <icon-row
+      v-for="name in filteredIconNames"
+      v-bind:key="name"
+      v-bind:name="name"
+    ></icon-row>
+</table>
+
+
+
+</div> <!-- iconApp -->
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script async type="text/javascript" src="main.js"></script>
+</body>
+</html>
