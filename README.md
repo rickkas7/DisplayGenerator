@@ -20,6 +20,10 @@ To use the tool, go to the [DisplayGenerator Web Page](https://rickkas7.github.i
 
 ## What can you do with it?
 
+Here's a video of it in action:
+
+![Video](images/video.mp4)
+
 Here's a sample screen:
 
 ![Main Screen](images/screen1.png)
@@ -71,7 +75,7 @@ Odds are iffy on mobile, but it doesn't really make sense to use it on a mobile 
 There are two main parts:
 
 - The user interface part is a Vue.js application.
-- The Adafruit GFX code runs using Enscripten.
+- The Adafruit GFX code runs using Emscripten.
 
 [Emscripten](https://emscripten.org) takes C++ code and compiles it to WebASM. I have the Adafruit GFX library and some necessary utilities (like String) as the C++ source in the src directory. 
 
