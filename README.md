@@ -20,10 +20,6 @@ To use the tool, go to the [DisplayGenerator Web Page](https://rickkas7.github.i
 
 ## What can you do with it?
 
-Here's a video of it in action:
-
-![Video](images/video.mp4)
-
 Here's a sample screen:
 
 ![Main Screen](images/screen1.png)
