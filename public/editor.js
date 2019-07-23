@@ -120,6 +120,9 @@ function initializeVue() {
 			<span v-if="command.op === 'println'">
 			println: <input v-model="command.text" size="20">
 			</span>
+			<span v-if="command.op === 'printCentered'">
+			printCentered: <input v-model="command.text" size="20"> width = {{command.width}}
+			</span>
 			<span v-if="command.op === 'drawIcon'">
 			drawIcon: x = <input v-model="command.x" size="4"> y = <input v-model="command.y" size="4"> 
 			color = <input v-model="command.color" size="4">
@@ -172,7 +175,7 @@ function initializeVue() {
 				'writePixel', 'drawLine','drawRect','fillRect','drawRoundRect','fillRoundRect',
 				'drawCircle','fillCircle', 'drawTriangle','fillTriangle',
 				'setCursor', 'setTextSize', 'setTextWrap', 'setFont', 
-				'print','println',
+				'print','println','printCentered',
 				'drawIcon'],
 			commandDefaults: {
 				writePixel:{x:"0", y:"0", color:"1"},
@@ -191,6 +194,7 @@ function initializeVue() {
 				setFont:{font:"Default"},
 				print:{text:"HELLO"},
 				println:{text:"HELLO"},
+				printCentered:{text:"HELLO"},
 				drawIcon:{x:"0", y:"0", size:"24", width:"24", height:"24", color:"1", bitmap:""}
 			},
 			nextId:5,
@@ -1009,12 +1013,30 @@ function processCommands() {
 		
 		case 'print':
 			gfx.print(cmd.text);
-			codeImpl += indent + gfxClass + 'println(' + quotedC(cmd.text) + ');\n';
+			codeImpl += indent + gfxClass + 'print(' + quotedC(cmd.text) + ');\n';
 			break;
 		
 		case 'println':
 			gfx.println(cmd.text);
-			codeImpl += indent + gfxClass + 'printlnf(' + quotedC(cmd.text) + ');\n';
+			codeImpl += indent + gfxClass + 'println(' + quotedC(cmd.text) + ');\n';
+			break;
+			
+		case 'printCentered':
+			{
+				var cursorY = gfx.getCursorY();
+				cmd.width = gfx.measureTextX(cmd.text);
+				console.log("cursorY=" + cursorY + " width=" + cmd.width);
+				var cursorX = Math.floor((screenx / 2) - (cmd.width / 2));
+				
+				gfx.setTextWrap(0);
+				codeImpl += indent + gfxClass + 'setTextWrap(0);\n';
+				
+				gfx.setCursor(cursorX, cursorY);
+				codeImpl += indent + gfxClass + 'setCursor(' + cursorX + ', ' + cursorY + ');\n';
+
+				gfx.println(cmd.text);
+				codeImpl += indent + gfxClass + 'println(' + quotedC(cmd.text) + ');\n';
+			}
 			break;
 																
 		case 'drawIcon':

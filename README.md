@@ -88,4 +88,12 @@ It also generates the C++ display code, including the GFX calls, any additional 
 The Javascript code takes the display bitmap and renders it on a HTML5 canvas in normal and zoomed size.
 
 
- 
+## Releases
+
+#### 0.0.2 2019-07-23 
+
+- Added printCentered option. Note that only centers static text since GFX doesn't include a feature to automatically center text on the fly. It measures the text and generates the appropriate setCursor automatically.
+
+#### 0.0.1 2019-07-22 
+
+Initial version!

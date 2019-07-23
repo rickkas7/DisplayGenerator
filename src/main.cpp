@@ -167,9 +167,12 @@ public:
     void _setTextSize(int size) { setTextSize(size); };
     void _setTextWrap(int w) { setTextWrap(w != 0); };
     void _drawBitmap(int x, int y, std::vector<int> bitmap, int w, int h, int color);
+    int _getCursorX() const { return getCursorX(); };
+    int _getCursorY() const { return getCursorY(); };
 
     void _print(std::string s);
     void _println(std::string s);
+    int _measureTextX(std::string str);
 
     int getNumFonts();
     std::string getFontName(int index);
@@ -198,6 +201,19 @@ void TestGFX::_println(std::string str) {
 	}
 	write('\n');
 }
+
+int TestGFX::_measureTextX(std::string str) {
+	int16_t x1, y1;
+	uint16_t w, h;
+
+	getTextBounds(str.c_str(), 0, getCursorY(), &x1, &y1, &w, &h);
+
+	return w;
+}
+
+// getTextBounds(const char *string, int16_t x, int16_t y,
+//  int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h),
+
 
 void TestGFX::_drawBitmap(int x, int y, std::vector<int> bitmapValues, int w, int h, int color) {
 	uint8_t *bitmap = new uint8_t[bitmapValues.size()];
@@ -271,6 +287,9 @@ EMSCRIPTEN_BINDINGS(testGFX) {
 			.function("drawBitmap", &TestGFX::_drawBitmap)
 			.function("getFonts", &TestGFX::getFonts)
 			.function("setFontByName", &TestGFX::setFontByName)
+			.function("getCursorX", &TestGFX::_getCursorX)
+			.function("getCursorY", &TestGFX::_getCursorY)
+			.function("measureTextX", &TestGFX::_measureTextX)
 			.function("getBytes", &TestGFX::getBytes)
 			;
 	register_vector<std::string>("VectorString");
