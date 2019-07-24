@@ -109,6 +109,9 @@ function initializeVue() {
 			</option>
 			</select>
 			</span>
+			<span v-if="command.op === 'setTextColor'">
+			setTextColor: <input type="checkbox" v-model="command.invert"/>Inverted Color (only works for default font)
+			</span>
 			<span v-if="command.op === 'setTextSize'">
 			setTextSize: size = <input v-model="command.size" size="4">
 			</span>
@@ -166,16 +169,17 @@ function initializeVue() {
 		el: '#mainApp',
 		data: {
 			commands: [
-				{id:1, op:'setCursor', x:"0", y:"10"},
-				{id:4, op:'setTextSize', size:"1"},
+				{id:1, op:'setTextColor', invert:false},
+				{id:2, op:'setTextSize', size:"1"},
 				{id:3, op:'setFont', font:"Default"},
-				{id:2, op:'println', text:"HELLO WORLD"}
+				{id:4, op:'setCursor', x:"0", y:"10"},
+				{id:5, op:'println', text:"HELLO WORLD"}
 				],
 			fonts: fontArray,
 			commandNames: [
 				'writePixel', 'drawLine','drawRect','fillRect','drawRoundRect','fillRoundRect',
 				'drawCircle','fillCircle', 'drawTriangle','fillTriangle',
-				'setCursor', 'setTextSize', 'setTextWrap', 'setFont', 
+				'setCursor', 'setTextColor', 'setTextSize', 'setTextWrap', 'setFont', 
 				'print','println','printCentered',
 				'drawIcon'],
 			commandDefaults: {
@@ -190,6 +194,7 @@ function initializeVue() {
 				drawTriangle:{x0:"0", y0:"0", x1:"20", y1:"0", x2:"10", y2:"10", color:"1"},
 				fillTriangle:{x0:"0", y0:"0", x1:"20", y1:"0", x2:"10", y2:"10", color:"1"},
 				setCursor:{x:"0", y:"10"},
+				setTextColor:{invert:0},
 				setTextSize:{size:"1"},
 				setTextWrap:{w:"1"},
 				setFont:{font:"Default"},
@@ -198,13 +203,14 @@ function initializeVue() {
 				printCentered:{text:"HELLO"},
 				drawIcon:{x:"0", y:"0", size:"24", width:"24", height:"24", color:"1", bitmap:""}
 			},
-			nextId:5,
+			nextId:6,
 			commandToAdd:'setCursor',
 			codeText:'',
 			selectedCommandId:-1,
 			coordinates:'',
 			downloadAppend:false,
-			displayType:'normal'
+			displayType:'normal',
+			invertDisplay:false
 		},
 		methods: {
 			addCommand: function() {
@@ -428,6 +434,11 @@ function initializeVue() {
 					
 					document.getElementById('mainCanvas').height = mainCanvasHeight();
 					
+					processCommands();
+				}
+			},
+			invertDisplay: {
+				handler(val) {
 					processCommands();
 				}
 			}
@@ -928,7 +939,9 @@ function processCommands() {
 	var codeImpl = 'void updateDisplay() {\n';
 
 	var indent = '    ';
-	var gfxClass = 'gfx.';
+	var gfxClass = 'display.';
+
+	codeImpl += indent + gfxClass + 'clearDisplay();\n';
 
 	gfx.fillScreen(0);
 	for(var ii = 0; ii < mainApp.commands.length; ii++) {
@@ -1002,6 +1015,18 @@ function processCommands() {
 			}
 			break;
 			
+			
+		case 'setTextColor':
+			if (!cmd.invert) {
+				gfx.setTextColor(1);
+				codeImpl += indent + gfxClass + 'setTextColor(WHITE);\n';				
+			}
+			else {
+				gfx.setTextColor2(0, 1);
+				codeImpl += indent + gfxClass + 'setTextColor(BLACK, WHITE);\n';				
+			}
+			break;
+			
 		case 'setTextSize':
 			gfx.setTextSize(parseInt(cmd.size));
 			codeImpl += indent + gfxClass + 'setTextSize(' + cmd.size + ');\n';
@@ -1068,6 +1093,7 @@ function processCommands() {
 			break;
 		}
 	}
+	codeImpl += indent + gfxClass + 'display();\n';
 
 	codeImpl += '};\n';
 
@@ -1140,6 +1166,11 @@ function render() {
 
 			for(var ii = 0; ii < 8; ii++) {
 				var pixel = ((pixel8 & (1 << (7 - ii))) != 0) ? 1 : 0;
+				
+				if (mainApp.invertDisplay) {
+					pixel = !pixel;
+				}
+				
 				if (pixel) {
 					ctx.fillRect(mainCanvasX(xx + ii), mainCanvasY(yy), zoom, zoom);
 

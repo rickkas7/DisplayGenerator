@@ -164,11 +164,14 @@ public:
     void _fillRoundRect(int x0, int y0, int w, int h, int radius, int color) { fillRoundRect(x0, y0, w, h, radius, color); };
     void _setCursor(int x, int y) { setCursor(x, y); };
     void _setTextColor(int color) { setTextColor(color); };
+    void _setTextColor2(int color, int backgroundColor) { setTextColor(color, backgroundColor); };
     void _setTextSize(int size) { setTextSize(size); };
     void _setTextWrap(int w) { setTextWrap(w != 0); };
     void _drawBitmap(int x, int y, std::vector<int> bitmap, int w, int h, int color);
     int _getCursorX() const { return getCursorX(); };
     int _getCursorY() const { return getCursorY(); };
+    void _invertDisplay(int invert) { return invertDisplay(invert); };
+    void _setRotation(int rot) { return setRotation(rot); };
 
     void _print(std::string s);
     void _println(std::string s);
@@ -280,6 +283,7 @@ EMSCRIPTEN_BINDINGS(testGFX) {
 			.function("fillRoundRect", &TestGFX::_fillRoundRect)
 			.function("setCursor", &TestGFX::_setCursor)
 			.function("setTextColor", &TestGFX::_setTextColor)
+			.function("setTextColor2", &TestGFX::_setTextColor2)
 			.function("setTextSize", &TestGFX::_setTextSize)
 			.function("setTextWrap", &TestGFX::_setTextWrap)
 			.function("print", &TestGFX::_print)
@@ -291,6 +295,8 @@ EMSCRIPTEN_BINDINGS(testGFX) {
 			.function("getCursorY", &TestGFX::_getCursorY)
 			.function("measureTextX", &TestGFX::_measureTextX)
 			.function("getBytes", &TestGFX::getBytes)
+			.function("invertDisplay", &TestGFX::_invertDisplay)
+			.function("setRotation", &TestGFX::_setRotation)
 			;
 	register_vector<std::string>("VectorString");
 	register_vector<int>("VectorInt");
