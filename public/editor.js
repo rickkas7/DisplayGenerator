@@ -9,6 +9,7 @@ var margin = 4;
 var showMini = true;
 var miniMargin = 2;
 var miniSeparator = 10;
+var yellowTopSize = 16;
 var displayWhite = '#e2fdff';
 var displayYellow = '#fdf020';
 var displayBlue = '#4bd3ff';
@@ -425,7 +426,7 @@ function initializeVue() {
 						screeny = 64;
 					}
 					
-					document.getElementById('mainCanvas').height = (screeny * zoom) + (2 * margin);
+					document.getElementById('mainCanvas').height = mainCanvasHeight();
 					
 					processCommands();
 				}
@@ -884,7 +885,7 @@ function initializeVue() {
 
 					for(var ii = 0; ii < bitmap.length; ii++) {
 						var value = bitmap[ii];
-						if (value < 16) {
+						if (value < 0x10) {
 							hex += '0' + value.toString(16);
 						}
 						else {
@@ -1023,14 +1024,13 @@ function processCommands() {
 			
 		case 'printCentered':
 			{
-				var cursorY = gfx.getCursorY();
-				cmd.width = gfx.measureTextX(cmd.text);
-				console.log("cursorY=" + cursorY + " width=" + cmd.width);
-				var cursorX = Math.floor((screenx / 2) - (cmd.width / 2));
-				
 				gfx.setTextWrap(0);
 				codeImpl += indent + gfxClass + 'setTextWrap(0);\n';
-				
+	
+				var cursorY = gfx.getCursorY();
+				cmd.width = gfx.measureTextX(cmd.text);
+				var cursorX = Math.floor((screenx / 2) - (cmd.width / 2));
+								
 				gfx.setCursor(cursorX, cursorY);
 				codeImpl += indent + gfxClass + 'setCursor(' + cursorX + ', ' + cursorY + ');\n';
 
@@ -1076,6 +1076,34 @@ function processCommands() {
 	render();
 }
 
+function mainCanvasX(x) {
+	return margin + x * zoom;
+}
+function mainCanvasY(y) {
+	return margin + y * zoom + ((mainApp.displayType === 'yellow' && y >= yellowTopSize) ? zoom : 0);
+}
+function mainCanvasWidth() {
+	return (2 * margin) + (screenx * zoom);
+}
+function mainCanvasHeight() {
+	return (2 * margin) + (screeny * zoom) + ((mainApp.displayType === 'yellow') ? zoom : 0);
+}
+function miniCanvasLeft() {
+	return (screenx * zoom) + (2 * margin) + miniSeparator;	
+}
+function miniCanvasX(x) {
+	return miniCanvasLeft() + miniMargin + x;
+}
+function miniCanvasY(y) {
+	return miniMargin + y + ((mainApp.displayType === 'yellow' && y >= yellowTopSize) ? 1 : 0);
+}
+function miniCanvasWidth() {
+	return (2 * miniMargin) + screenx;
+}
+function miniCanvasHeight() {
+	return (2 * miniMargin) + screeny + ((mainApp.displayType === 'yellow') ? 1 : 0);
+}
+
 function render() {
 	// Bytes are left to right, top to bottom, one bit per byte
 	// Within the byte 0x80 is the leftmost pixel, 0x40 is the next, ... 0x01 is the rightmost pixel in the byte
@@ -1084,16 +1112,14 @@ function render() {
 	var canvas = document.getElementById("mainCanvas");
 	var ctx = canvas.getContext("2d");
 
-	var minix = (screenx * zoom) + (2 * margin) + miniSeparator;
-
 	var yellow = (mainApp.displayType === 'yellow');
 	
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 	ctx.fillStyle = "#000000";
-	ctx.fillRect(0, 0, (screenx * zoom) + (2 * margin), (screeny * zoom) + (2 * margin));
+	ctx.fillRect(0, 0, mainCanvasWidth(), mainCanvasHeight());
 	if (showMini) {
-		ctx.fillRect(minix, 0, screenx + (2 * miniMargin), screeny + (2 * miniMargin));
+		ctx.fillRect(miniCanvasLeft(), 0, miniCanvasWidth(), miniCanvasHeight());
 	}
 
 	ctx.fillStyle = displayWhite;
@@ -1102,7 +1128,7 @@ function render() {
 	var byteIndex = 0;
 	for(var yy = 0; yy < screeny; yy++) {
 		if (yellow) {
-			if (yy < 16) {
+			if (yy < yellowTopSize) {
 				ctx.fillStyle = displayYellow;				
 			}
 			else {
@@ -1115,10 +1141,10 @@ function render() {
 			for(var ii = 0; ii < 8; ii++) {
 				var pixel = ((pixel8 & (1 << (7 - ii))) != 0) ? 1 : 0;
 				if (pixel) {
-					ctx.fillRect(margin + (xx + ii) * zoom, margin + yy * zoom, zoom, zoom);
+					ctx.fillRect(mainCanvasX(xx + ii), mainCanvasY(yy), zoom, zoom);
 
 					if (showMini) {
-						ctx.fillRect(minix + miniMargin + (xx + ii), miniMargin + yy, 1, 1);
+						ctx.fillRect(miniCanvasX(xx + ii), miniCanvasY(yy), 1, 1);
 					}
 					//console.log("set pixel xx=" + (xx + ii) + " yy=" + yy);
 				}

@@ -90,9 +90,13 @@ The Javascript code takes the display bitmap and renders it on a HTML5 canvas in
 
 ## Releases
 
+#### 0.0.3
+
+- Add gap between the yellow and blue parts of the display like an actual display.
+
 #### 0.0.2 2019-07-23 
 
-- Added printCentered option. Note that only centers static text since GFX doesn't include a feature to automatically center text on the fly. It measures the text and generates the appropriate setCursor automatically.
+- Added printCentered option. Note that this only centers static text since GFX doesn't include a feature to automatically center text on the fly. It measures the text and generates the appropriate setCursor for you.
 
 #### 0.0.1 2019-07-22 
 
