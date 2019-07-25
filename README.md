@@ -93,6 +93,10 @@ The Javascript code takes the display bitmap and renders it on a HTML5 canvas in
 #### 0.0.3
 
 - Add gap between the yellow and blue parts of the display like an actual display.
+- Add Invert Display option
+- Add setTextColor(WHITE) by default
+- Add setTextColor inverted option (only works with default font)
+- Add clearDisplay() and display() to code automatically
 
 #### 0.0.2 2019-07-23 
 
