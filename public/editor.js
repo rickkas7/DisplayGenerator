@@ -761,7 +761,8 @@ function initializeVue() {
 				selectedIconName: "",
 				search: "alert",
 				hex: "",
-				showCode: false
+				showCode: false,
+				standardLogoSelect: ""
 		},
 		watch: {
 			square: "updateIcon",
@@ -777,7 +778,8 @@ function initializeVue() {
 				else {
 					document.getElementById('codeOutput').style.display = 'none';											
 				}
-			}
+			},
+			standardLogoSelect: "updateIcon"
 		},
 		computed: {
 			filteredIconNames: function() {
@@ -821,11 +823,61 @@ function initializeVue() {
 						};
 					})(files[0]);
 
+					// Clear any icon name
+					this.selectedIconName = '';
+					
 					// Read in the image file as a data URL.
 					reader.readAsDataURL(files[0]);
 				}
 			},
 			updateIcon: function() {
+				if (this.standardLogoSelect != '' && selectedCmd != undefined) {
+					
+					
+					switch(this.standardLogoSelect) {
+					case 'p128x32':
+						selectedCmd.x = 0;
+						selectedCmd.y = (screeny == 32) ? 0 : 16;
+						selectedCmd.width = 128;
+						selectedCmd.height = 32;
+						selectedCmd.bitmap = particle128x32;
+						break;
+						
+					case 'p32x32':
+						selectedCmd.x = 48;
+						selectedCmd.y = (screeny == 32) ? 0 : 16;
+						selectedCmd.width = 32;
+						selectedCmd.height = 32;
+						selectedCmd.bitmap = particle32x32;
+						break;
+
+					case 'p48x48':
+						selectedCmd.x = 40;
+						selectedCmd.y = (screeny == 32) ? -8 : 8;
+						selectedCmd.width = 48;
+						selectedCmd.height = 48;
+						selectedCmd.bitmap = particle48x48;
+						break;
+
+					case 'a82x64':
+						selectedCmd.x = 23;
+						selectedCmd.y = 0;
+						selectedCmd.width = 82;
+						selectedCmd.height = 64;
+						selectedCmd.bitmap = adafruit82x64;
+						break;
+						
+					case 'a115x32':
+						selectedCmd.x = 6;
+						selectedCmd.y = 0;
+						selectedCmd.width = 115;
+						selectedCmd.height = 32;
+						selectedCmd.bitmap = adafruit115x32;
+						break;
+					}
+
+				}
+				else
 				if (this.selectedIconName != '') {
 					var img = document.getElementById('img' + this.selectedIconName);
 					iconApp.updateIconWithImg(img);
@@ -852,7 +904,7 @@ function initializeVue() {
 				var ctx = canvas.getContext("2d");
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-				if (width > 5 && width <= 64 && height > 5 && height <= 64) {
+				if (width > 5 && width <= 128 && height > 5 && height <= 64) {
 					ctx.drawImage(img, 0, 0, width, height);	
 
 					var imageData = ctx.getImageData(0, 0, width, height);
@@ -942,11 +994,11 @@ function processCommands() {
 	var gfxClass = 'display.';
 
 	codeImpl += indent + gfxClass + 'clearDisplay();\n';
-
+	
 	gfx.fillScreen(0);
 	for(var ii = 0; ii < mainApp.commands.length; ii++) {
 		var cmd = mainApp.commands[ii];
-
+		
 		switch(cmd.op) {
 		case 'writePixel': 
 			gfx.writePixel(parseInt(cmd.x), parseInt(cmd.y), parseInt(cmd.color));
@@ -1065,16 +1117,16 @@ function processCommands() {
 			break;
 																
 		case 'drawIcon':
-			if (cmd.bitmap != '' && parseInt(cmd.size) > 0) {
+			if (cmd.bitmap != '' && parseInt(cmd.width) > 0 && parseInt(cmd.height) > 0) {
 				var bitmap = new Module.VectorInt();
 
 				var codeHex = '';
 
-				for(var ii = 0; ii < cmd.bitmap.length; ii += 2) {
-					var val = parseInt('0x' + cmd.bitmap.substr(ii, 2));
+				for(var jj = 0; jj < cmd.bitmap.length; jj += 2) {
+					var val = parseInt('0x' + cmd.bitmap.substr(jj, 2));
 					bitmap.push_back(val);
 
-					codeHex += '0x' + cmd.bitmap.substr(ii, 2) + ', ';
+					codeHex += '0x' + cmd.bitmap.substr(jj, 2) + ', ';
 				}	
 				gfx.drawBitmap(parseInt(cmd.x), parseInt(cmd.y), bitmap, parseInt(cmd.width), parseInt(cmd.height), parseInt(cmd.color));
 
@@ -1084,7 +1136,7 @@ function processCommands() {
 				codeHex = codeHex.substr(0, codeHex.length - 2);
 
 				codeDecl += 'const uint8_t bitmap' + cmd.id + '[] = {' + codeHex + '};\n';
-				codeImpl += indent + gfxClass + 'drawBitmap(' + cmd.x + ', ' + cmd.y + ', &bitmap' + cmd.id + ', ' + cmd.size + ', ' + cmd.size + ', ' + cmd.color + ');\n';
+				codeImpl += indent + gfxClass + 'drawBitmap(' + cmd.x + ', ' + cmd.y + ', bitmap' + cmd.id + ', ' + cmd.width + ', ' + cmd.height + ', ' + cmd.color + ');\n';				
 			}
 			break;
 
@@ -1095,7 +1147,7 @@ function processCommands() {
 	}
 	codeImpl += indent + gfxClass + 'display();\n';
 
-	codeImpl += '};\n';
+	codeImpl += '}\n';
 
 	mainApp.codeText = codeIncl + codeDecl + '\n' + codeImpl;
 
@@ -1191,3 +1243,18 @@ function quotedC(str) {
 
 	return '"' + str + '"';
 }
+
+// Standard logos
+const particle128x32 = '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000018000000000000000000000000000000180003fe000000000000006000000020380c03ffc0000003818000600000003838380383f0000003818000600000001e3c70038078000003818000600000000fbdf00380380000038000006000000007c7e0038018fe0c1bfd81f06078000007ffc003801bff8cfbfd87fc61ff000003ff8003801b83cfe3818f1f63c780003dfff803803800cf83819c0767038003feff7f83807000ef0381b8006e01c000fdff7f03ffe07fee0381b0006c00c00003ff8003ffc1ffec0381b0006fffc00003ffc0038007c0ec0381b0006fffc00007efe003800700ec0381b0006c0000000fbbe003800600ec0381b8006e0000001f3cf003800600ec0381b8026e0000001c383803800703ec01819e076701c00030381c038003ffec01fd8ffe63ff8000001800038001feec00fd83fc61ff0000001800000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
+
+const particle32x32 = '00018000000180000001800000018000080180100603c0600703c0e003c3c3c001e3cf8001f99f8000fe7f0000fffe00007ffe00003ffc0007bffde0ffdffbffffdffbff07bffde0003ffc00007ffe0000fffe0000fe7f0001f99f8001e3cf8003c3c3c00703c0e00603c0600801801000018000000180000001800000018000';
+
+const particle48x48 = '000001000000000001800000000001800000000001800000000001800000000003c00000000003c00000018003c0018001c003c0038000f007c00f00007807e01e00007e07e07e00003f07e0fc00001fc7e3f800001fe18ff800000ff81ff0000007fe7fe0000007ffffe0000003ffffc0000003ffff80000001ffff8000003cffff3c0007fcffff3fe0fffe7ffe7ffffffe7ffe7fff07fcffff3fe0003cffff3c000001ffff80000003ffff80000003ffffc0000007ffffe0000007fe7fe000000ff81ff000001fe18ff800001fc7e3f800003f07e0fc00007e07e07e00007807e01e0000f007c00f0001c003c00380018003c00180000003c00000000003c00000000001800000000001800000000001800000000001800000000001000000';
+
+const adafruit82x64 = '00000000000180000000000000000000038000000000000000000007C000000000000000000007C00000000000000000000FC00000000000000000001FE00000000000000000001FE00000000000000000003FE00000000000000000003FF00000000000000000007FF0000000000000001FF87FF0000000000000003FFE7FF0000000000000003FFF7FF0000000000000001FFFFBE0000000000000000FFFF9FFC00000000000000FFFF9FFF800000000000007FFF1FFFF00000000000003FC73FFFF80000000000001FE3FFFFF80000000000000FF1E0FFF000000000000007FFE1FFC000000000000003FFFFFF8000000000000000FDFFFE0000000000000001F19FFC0000000000000003F3CFF00000000000000007E7CF800000000000000007FFE7C0000000000000000FFFFFC0000000000000000FFFFFE0000000000000000FFFFFE0000000000000001FFEFFE0000000000000001FFCFFE0000000000000003FF07FE0000000000000003FC07FE0000000000000003F003FE00000000000000018000FE000000000000000000007E000000000000000000003E000000000000000000000C000000000000078000FC000003C0000000078001FC000003C0000000078001FC000003C0000000078001E00000001E000000078001E00000001E007FE3F79FF9FDE7787BDFC0FFF7FFBFFDFDFF787BDFC0FFF7FFBFFDFDFF787BDFC0F0F787BC3DE1FF787BDE00F0F787BC3DE1F0787BDE0000F787803DE1E0787BDE007FF7879FFDE1E0787BDE00FFF787BFFDE1E0787BDE00F0F787BC3DE1E0787BDE00F0F787BC3DE1E0787BDE00F0F787BC3DE1E0787BDE00FFF7FFBFFDE1E07FFBDFC0FFF7FFBFFDE1E07FFBDFC07CF3F39F3DE1E03E7BCFC00000000000000000000000FFFFFFFFFFFFFFFFFFFFC0FFFFFFFFFD68DB111A31C0FFFFFFFFFD2B5AFB6AEFC0FFFFFFFFFD4B5B3B1A33C0FFFFFFFFFD6B5BDB6AFDC0';
+
+
+const adafruit115x32 = '0000600000000000000000000000000000E00000000000000000000000000001E00000000000000000000000000001F00000000000000000000000000003F00000000000000000000000000007F00000000000000000000000000007F8000000000000000000000000000FF800000003C0007E000001E0007F0FF800000003C000FE000001E000FFEFF800000003C000FE000001E000FFFFF800000003C000F00000000F007FFE7FC0000003C000F00000000F003FFE7FF83FF1FBCFFCFEF3BC3DEFE01FFE7FFF7FFBFFDFFEFEFFBC3DEFE01FC6FFFF7FFBFFDFFEFEFFBC3DEFE00FE3C7FE787BC3DE1EF0FFBC3DEF0007FF87FC787BC3DE1EF0F83C3DEF0001FFFFF0007BC3C01EF0F03C3DEF0001F37FE03FFBC3CFFEF0F03C3DEF0003E33F807FFBC3DFFEF0F03C3DEF0007E73C00787BC3DE1EF0F03C3DEF0007FFBE00787BC3DE1EF0F03C3DEF0007FFFE00787BC3DE1EF0F03C3DEF000FFFFE007FFBFFDFFEF0F03FFDEFE00FFFFF007FFBFFDFFEF0F03FFDEFE00FF9FF003E79F9CF9EF0F01F3DE7E01FF1FF0000000000000000000000001F80FF007FFFFFFFFFFFFFFFFFFFE01C007F007FFFFFFFFEB46D888D18E000001F007FFFFFFFFE95AD7DB577E000000F007FFFFFFFFEA5AD9D8D19E0000006007FFFFFFFFEB5ADEDB57EE0';
+
+
+

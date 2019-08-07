@@ -101,12 +101,26 @@ displays (128x64 or 128x32) on Particle devices. You can find out more about thi
 	</div>
 	<div>
 		<p>Icon Preview: {{selectedIconName}}</p>
-		<canvas id="iconCanvas" width="64" height="64"></canvas>
+		<canvas id="iconCanvas" width="128" height="64"></canvas>
 		<p><img id="iconImg" style="display:none" /></p>
 	</div>
 	<div>
 		<p>Upload and convert image file: 
 		<input type="file" id="files" name="files" accept="image/*, *.gif, *.jpg, *.jpeg, *.png, *.svg" v-on:change="uploadIconCommand"/></p>
+	</div>
+	<div>
+		<p>Or select a standard logo:
+		    <select v-model="standardLogoSelect">
+			<option value="" selected>Select logo</option>
+			<option value="p128x32">Particle 128x32</option>
+			<option value="p32x32">Particle logo only 32x32</option>
+			<option value="p48x48">Particle logo only 48x48</option>
+			<option value="a82x64">Adafruit 82x64</option>
+			<option value="a115x32">Adafruit 115x32</option>
+			
+			</select>
+		 
+		</p>
 	</div>
 	<div>
 		<p>Or select a stock icon from the open source <a href="https://feathericons.com/">Feather Icons</a> collection:</p>
